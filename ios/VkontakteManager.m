@@ -38,6 +38,8 @@
   return self;
 }
 
+static NSString *const ALL_USER_FIELDS = @"id,first_name,last_name,sex,bdate,city,country,photo_50,photo_100,photo_200_orig,photo_200,photo_400_orig,photo_max,photo_max_orig,online,online_mobile,lists,domain,has_mobile,contacts,connections,site,education,universities,schools,can_post,can_see_all_posts,can_see_audio,can_write_private_message,status,last_seen,common_count,relation,relatives,counters";
+    
 RCT_EXPORT_MODULE();
 
 - (dispatch_queue_t)methodQueue {
@@ -83,6 +85,22 @@ RCT_EXPORT_METHOD(login: (NSArray *) scope resolver: (RCTPromiseResolveBlock) re
   }];
 };
 
+RCT_EXPORT_METHOD(getFriendsListWithFields:(NSString *)userFields resolver: (RCTPromiseResolveBlock) resolve rejecter: (RCTPromiseRejectBlock) reject) {
+    NSLog(@"RCTVkSdkFriendsList#get:%@", userFields);
+    
+    VKRequest *friendsRequest = [[VKApi friends] get:@{VK_API_FIELDS : userFields ?: ALL_USER_FIELDS}];
+    friendsRequest.requestTimeout = 10;
+    
+    [friendsRequest executeWithResultBlock:^(VKResponse *response) {
+        NSLog(@"RCTVkSdkFriendsList#get-success");
+        resolve(response.json[@"items"]);
+    } errorBlock:^(NSError *error) {
+        NSLog(@"RCTVkSdkFriendsList#get-error: %@", error);
+        reject(RCTErrorUnspecified, nil, RCTErrorWithMessage(error.localizedDescription));
+        return;
+    }];
+};
+    
 RCT_EXPORT_METHOD(isLoggedIn: (RCTPromiseResolveBlock) resolve rejecter: (RCTPromiseRejectBlock) reject) {
   if ([VKSdk initialized]){
   resolve([NSNumber numberWithBool:[VKSdk isLoggedIn]]);
