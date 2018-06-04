@@ -126,7 +126,9 @@ class VK {
    * @param {string} fields Fields to fetch with friends list separated by comma
    * @returns {Promise<object[]>} Promise that resolves with array of friends objects
    */
-  static getFriends(fields: string): Promise<object[]>
+  static getFriends(fields: string): Promise<object[]> {
+     return VKLogin.getFriendsListWithFields(fields);
+  }
                            
   /**
    * **Android only** - helper method to get fingerprints on JS side
