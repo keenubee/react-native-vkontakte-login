@@ -7,7 +7,12 @@ import android.util.Log;
 import com.facebook.react.bridge.*;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.vk.sdk.*;
+import com.vk.sdk.api.VKApi;
+import com.vk.sdk.api.VKApiConst;
 import com.vk.sdk.api.VKError;
+import com.vk.sdk.api.VKParameters;
+import com.vk.sdk.api.VKRequest;
+import com.vk.sdk.api.VKResponse;
 import com.vk.sdk.util.VKUtil;
 
 import javax.annotation.Nullable;
@@ -121,6 +126,35 @@ public class VKAuthModule extends ReactContextBaseJavaModule implements Activity
         VKSdk.login(activity, scopeArray);
     }
 
+    @ReactMethod
+	public void getFriendsListWithFields(String userFields, final Promise promise) {
+		VKRequest getFriendsRequest = 
+            .friends().get(VKParameters.from(VKApiConst.FIELDS, userFields));
+		getFriendsRequest.executeWithListener(new VKRequest.VKRequestListener() {
+			@Override
+			public void onComplete(VKResponse response) {
+				super.onComplete(response);
+
+				try {
+					WritableMap result = jsonToWritableMap(response.json.getJSONObject("response"));
+					promise.resolve(result);
+				} catch (JSONException e) {
+					e.printStackTrace();
+					promise.reject("E_VKSDK_ERROR", "Ошибка получения списка друзей");
+				}
+			}
+
+			@Override
+			public void onError(VKError error) {
+				super.onError(error);
+                promise.reject(
+                                "" + error.errorCode,
+                                error.errorMessage + ". " + error.apiError.errorMessage
+			}
+		});
+
+	}
+    
     @ReactMethod
     public void logout(Promise promise) {
         if (!isInitialized) {
